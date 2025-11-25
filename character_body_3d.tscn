@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://2ktehuym710h"]
+
+[ext_resource type="Script" uid="uid://b6v3v8aci343h" path="res://character_body_3d.gd" id="1_iwpo4"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_bu0v1"]
+
+[node name="CharacterBody3D" type="CharacterBody3D"]
+script = ExtResource("1_iwpo4")
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CylinderShape3D_bu0v1")
+
+[node name="Camera3D" type="Camera3D" parent="."]
