@@ -1,38 +1,41 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: Caminho da pasta principal
-set "PROJECT_FOLDER=%~dp0"
+:: nome do arquivo de log baseado no usuário
+set "LOGFILE=commit_log %USERNAME%.txt"
 
-:: Criar pasta "commits group" se não existir
-if not exist "%PROJECT_FOLDER%commits group" (
-    mkdir "%PROJECT_FOLDER%commits group"
-)
-
-:: Nome do arquivo de log baseado no usuário
-set "LOGFILE=%PROJECT_FOLDER%commits group\commit_log %USERNAME%.txt"
-
-cd /d "%PROJECT_FOLDER%"
+cd /d "%~dp0"
 
 :LOOP
 
-:: 1 - Puxar commits novos
+:: 1) baixar commits dos outros
 git fetch
 git pull --rebase --autostash
+if %errorlevel% neq 0 (
+    echo Rebase falhou, tentando novamente... >> "%LOGFILE%"
+    git rebase --abort >nul 2>&1
+    git pull --rebase --autostash
+)
 
-:: 2 - Verificar alterações locais
+:: 2) verificar alterações locais
 git status --porcelain | findstr . >nul
 
 if %errorlevel% equ 0 (
     set "now=%date% %time%"
-    echo [%now%] Alterações detectadas. >> "%LOGFILE%"
+    echo [%now%] Alteracoes detectadas. >> "%LOGFILE%"
 
     git add .
     git commit -m "Auto commit - !now!"
+
     git push
+    if %errorlevel% neq 0 (
+        echo Push falhou, tentando pull+push novamente... >> "%LOGFILE%"
+        git pull --rebase --autostash
+        git push
+    )
 
     echo [%now%] Commit enviado. >> "%LOGFILE%"
-    echo ------------------------------ >> "%LOGFILE%"
+    echo ---------------------------------------- >> "%LOGFILE%"
 )
 
 timeout /t 60 >nul
