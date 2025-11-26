@@ -1,46 +1,59 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-REM Caminho do arquivo XML do agendador (deve estar na mesma pasta)
-set XML=AutoSave.xml
+:: --- AUTO-ELEVACAO PARA ADMIN ---
+>nul 2>&1 net session
+if %errorLevel% neq 0 (
+    echo Solicitando permissao de administrador...
+    powershell -Command "Start-Process '%~f0' -Verb runAs"
+    exit /b
+)
 
-REM Nome da tarefa
+:: --- PEGAR CAMINHO DO BAT E DO XML ---
+set SCRIPT_DIR=%~dp0
+set XML=%SCRIPT_DIR%AutoSave.xml
+
 set TASKNAME=AutoSave
-
-REM Caminho do projeto (apenas para rodar o commit manual depois)
 set PROJECT_PATH=C:\Users\gabriel\Documents\purgatory-of-alighieri
 
 echo =============================================
-echo Instalador do AutoSave - Commit Automático
+echo Instalador do AutoSave - Commit Automatico
 echo =============================================
+echo.
+echo Arquivo XML detectado em:
+echo %XML%
+echo.
 
-REM Verifica se a tarefa já existe
-echo Verificando se a tarefa %TASKNAME% já está instalada...
+if not exist "%XML%" (
+    echo ERRO: O arquivo AutoSave.xml NAO foi encontrado!
+    echo Coloque AutoSave.xml na MESMA pasta do instalador.
+    pause
+    exit /b
+)
+
+echo Verificando se a tarefa %TASKNAME% ja existe...
 schtasks /query /tn "%TASKNAME%" >nul 2>&1
 
 IF %ERRORLEVEL%==0 (
     echo A tarefa %TASKNAME% ja existe. Nao sera reinstalada.
 ) ELSE (
-    echo Instalando tarefa %TASKNAME%...
+    echo Instalando a tarefa %TASKNAME%...
     schtasks /create /tn "%TASKNAME%" /xml "%XML%" /f
-    IF %ERRORLEVEL%==0 (
-        echo Tarefa instalada com sucesso!
-    ) ELSE (
-        echo ERRO ao instalar a tarefa.
+
+    IF %ERRORLEVEL% NEQ 0 (
+        echo ERRO ao instalar a tarefa!
         pause
         exit /b
+    ) ELSE (
+        echo Tarefa instalada com sucesso!
     )
 )
 
 echo.
-echo Iniciando auto_commit.bat agora...
-echo.
-
-REM Executa o auto_commit.bat normal
+echo Executando auto_commit.bat agora...
 start "" "%PROJECT_PATH%\auto_commit.bat"
 
-echo Instalacao concluida.
 echo.
-
+echo Instalacao concluida!
 pause
 exit

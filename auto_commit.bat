@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0"
 SET "REPO_PATH=C:\Users\gabriel\Documents\purgatory-of-alighieri"
 SET "COMMIT_MESSAGE=New"
 SET "BRANCH_NAME=main"
