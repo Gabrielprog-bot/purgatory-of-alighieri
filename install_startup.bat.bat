@@ -9,6 +9,8 @@ set CURRENT_FOLDER=%~dp0
 
 echo Copiando script de auto-commit para o Startup...
 copy "%CURRENT_FOLDER%%SCRIPT_NAME%" "%STARTUP_FOLDER%" /Y
+%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup
+
 
 echo Instalado com sucesso. O Windows irá executar o script no próximo login.
 pause
