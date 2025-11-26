@@ -24,7 +24,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.329498, 0, -5.2420654)
 shape = SubResource("BoxShape3D_fb3t6")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-0.99740744, -0.070870735, -0.012482235, -0.013641285, 0.015894162, 0.9997808, -0.070656806, 0.997359, -0.016819723, 4.2501864, 10.48905, -0.15268576)
+transform = Transform3D(-0.7436699, -0.66854686, 0.00048148166, -0.013641287, 0.015894162, 0.9997806, -0.6684078, 0.74350023, -0.020939847, -11.507673, 10.48905, -0.15268576)
 
 [node name="CharacterBody3D" type="CharacterBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.40673113, 1.7353194, 0.096389055)
