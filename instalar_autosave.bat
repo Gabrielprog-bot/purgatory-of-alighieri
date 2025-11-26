@@ -28,7 +28,7 @@
 ::ZQ0/vhVqMQ3MEVWAtB9wSA==
 ::Zg8zqx1/OA3MEVWAtB9wSA==
 ::dhA7pRFwIByZRRnk
-::Zh4grVQjdCyDJGyX8VAjFBxVThaLOWeGIrof/eX+4f6Unl0IRuU+bIDJw/mBJq0S5kzjfZ8oxHNmud4YAyhZaBeMZxt6rHZH1g==
+::Zh4grVQjdCyDJGyX8VAjFBxVThaLOWeGIroL5uT07u6UnmwIQO0MeZne/b2abuUL7yU=
 ::YB416Ek+ZW8=
 ::
 ::
@@ -66,4 +66,25 @@ if %errorlevel% neq 0 (
 schtasks /run /tn "%TASKNAME%" >nul 2>&1
 
 echo Instalacao concluida!
+
+:: ==================================================================
+:: JANELA REAL DO WINDOWS (MessageBox) PERGUNTANDO REINICIAR
+:: ==================================================================
+
+echo Exibindo janela de reinicializacao...
+
+powershell -command ^
+"Add-Type -AssemblyName PresentationFramework; ^
+$result = [System.Windows.MessageBox]::Show( ^
+ 'A instalacao do AutoSave foi concluida com sucesso.`n`n' + ^
+ 'Para que o AutoSave funcione corretamente desde o inicio,`n' + ^
+ 'é recomendado reiniciar o computador agora.`n`n' + ^
+ 'Deseja reiniciar agora?', ^
+ 'Reiniciar o computador?', ^
+ 'YesNo', ^
+ 'Question' ^
+); ^
+if ($result -eq 'Yes') { Start-Process 'shutdown' -ArgumentList '/r','/t','0' }"
+
+
 pause
