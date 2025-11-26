@@ -11,10 +11,14 @@ config_version=5
 [application]
 
 config/name="Purgatory of Alighieri"
-run/main_scene="uid://2ktehuym710h"
 config/features=PackedStringArray("4.5", "Mobile")
 config/icon="res://icon.svg"
+
+[filesystem]
+
+import/blender/enabled=false
 
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
