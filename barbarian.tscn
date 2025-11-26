@@ -1,5 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://brvdyhpjh1xj8"]
-
-[ext_resource type="PackedScene" uid="uid://bvr6omd75s0jw" path="res://KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Characters/fbx/Barbarian.fbx" id="1_ofhl6"]
-
-[node name="Barbarian" instance=ExtResource("1_ofhl6")]
