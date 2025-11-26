@@ -2,7 +2,7 @@
 $projectPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # Caminho do AutoCommit.bat dentro da mesma pasta
-$commitScript = Join-Path $projectPath "AutoCommit.bat"
+$commitScript = Join-Path $projectPath "auto_commit"
 
 # Criar o watcher
 $watcher = New-Object System.IO.FileSystemWatcher
