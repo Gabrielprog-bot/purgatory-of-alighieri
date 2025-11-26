@@ -1,45 +1,33 @@
-# Este script deve ser salvo DENTRO da pasta do seu projeto Godot.
+# Pega automaticamente a pasta onde esse script está
+$projectPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-# Configurações
-# O caminho para a pasta a ser monitorada é o diretório atual do script
-$PathToWatch = (Get-Item -Path $PSScriptRoot).FullName
-# O caminho para o script .bat é o mesmo diretório
-$PathToBat = Join-Path $PathToWatch "auto_commit.bat"
+# Caminho do AutoCommit.bat dentro da mesma pasta
+$commitScript = Join-Path $projectPath "auto_commit.bat"
 
-# --- Configuração do Monitoramento ---
-$Watcher = New-Object System.IO.FileSystemWatcher
-$Watcher.Path = $PathToWatch
-$Watcher.IncludeSubdirectories = $true
-$Watcher.EnableRaisingEvents = $true
+# Criar o watcher
+$watcher = New-Object System.IO.FileSystemWatcher
+$watcher.Path = $projectPath
+$watcher.Filter = "*.*"                
+$watcher.IncludeSubdirectories = $true 
+$watcher.EnableRaisingEvents = $true
 
-# Define um buffer de tempo para evitar múltiplas execuções por um único salvamento
-$LastRunTime = Get-Date
+Write-Host "Monitorando alterações em: $projectPath"
+Write-Host "AutoCommit será executado ao detectar mudanças..."
+Write-Host "Pressione Ctrl + C para parar.`n"
 
-# --- Ação a ser executada na mudança ---
-$Action = {
-    # Garante que o script só rode uma vez a cada 5 segundos
-    if ((Get-Date) -gt $script:LastRunTime.AddSeconds(5)) {
-        $script:LastRunTime = Get-Date
-        
-        Write-Host "--- Mudança detectada ---"
-        Write-Host "Executando o script .bat: $PathToBat"
-        
-        # Executa o script .bat
-        # O parâmetro -NoNewWindow garante que o .bat rode em segundo plano
-        Start-Process -FilePath $PathToBat -NoNewWindow -Wait
-        
-        Write-Host "Execução do .bat concluída. Monitorando novamente..."
-    }
+# AÇÃO AO MUDAR
+$action = {
+    Write-Host "`nAlterações detectadas! Executando AutoCommit.bat..."
+    Start-Process -FilePath $using:commitScript -WindowStyle Hidden
 }
 
-# Associa a ação aos eventos de mudança
-Register-ObjectEvent -InputObject $Watcher -EventName Changed -Action $Action -SourceIdentifier FileChanged
-Register-ObjectEvent -InputObject $Watcher -EventName Created -Action $Action -SourceIdentifier FileCreated
+# Eventos
+Register-ObjectEvent $watcher Changed -Action $action
+Register-ObjectEvent $watcher Created -Action $action
+Register-ObjectEvent $watcher Deleted -Action $action
+Register-ObjectEvent $watcher Renamed -Action $action
 
-Write-Host "Monitoramento iniciado na pasta: $PathToWatch"
-Write-Host "Pressione Ctrl+C para parar o monitoramento."
-
-# Mantém o script rodando em loop
+# Mantém o script rodando
 while ($true) {
     Start-Sleep -Seconds 1
 }
