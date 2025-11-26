@@ -2,6 +2,19 @@
 SET "REPO_PATH=C:\Users\gabriel\Documents\purgatory-of-alighieri"
 SET "COMMIT_MESSAGE=New"
 SET "BRANCH_NAME=main"
+setlocal enabledelayedexpansion
+
+:loop
+git fetch
+
+for /f "delims=" %%a in ('git status --porcelain') do (
+    git add .
+    git commit -m "Auto commit"
+    git push
+)
+
+timeout /t 2 >nul
+goto loop
 
 echo --- Iniciando Auto-Push ---
 echo Caminho: %REPO_PATH%
