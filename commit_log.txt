@@ -775,3 +775,8 @@ To https://github.com/Gabrielprog-bot/purgatory-of-alighieri.git
 [26/11/2025 17:47:29,29] Commit enviado. 
 ---------------------------------------- 
 [26/11/2025 17:47:42,30] Alteracoes detectadas. 
+[26/11/2025 17:47:42,30] Commit enviado. 
+---------------------------------------- 
+Push falhou, tentando pull + push novamente... 
+[26/11/2025 17:48:43,29] Commit enviado com sucesso. 
+---------------------------------------- 
