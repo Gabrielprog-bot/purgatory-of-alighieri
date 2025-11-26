@@ -1,0 +1,53 @@
+name: Deploy do Jogo para GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # O deploy será acionado sempre que houver um push para a branch 'main'
+  workflow_dispatch: # Permite acionar o deploy manualmente na aba Actions do GitHub
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    # Permissões necessárias para o deploy no GitHub Pages
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # 1. (OPCIONAL) Passo de Build:
+      # Se o seu jogo precisar de um passo de "compilação" ou "exportação"
+      # para gerar os arquivos finais (ex: pasta 'dist' ou 'build'), você deve
+      # descomentar e adaptar este bloco.
+      #
+      # Exemplo para um jogo feito com Node.js/JavaScript que usa 'npm run build':
+      # - name: Configurar Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '20'
+      # - name: Instalar dependências e Build
+      #   run: |
+      #     npm install
+      #     npm run build # Substitua por seu comando de build/exportação
+
+      # 2. Configurar o ambiente do GitHub Pages
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v4
+
+      # 3. Upload dos artefatos (arquivos do jogo)
+      # O 'path' deve apontar para a pasta que contém o arquivo 'index.html' do seu jogo.
+      # Se você usou um passo de Build que gera uma pasta 'dist', altere './' para './dist'
+      - name: Upload dos artefatos
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './' # Assumindo que os arquivos do jogo (index.html) estão na raiz do repositório.
+
+      # 4. Deploy para o GitHub Pages
+      - name: Deploy para o GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
