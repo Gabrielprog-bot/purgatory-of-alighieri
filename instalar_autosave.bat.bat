@@ -1,50 +1,46 @@
 @echo off
-SET "REPO_PATH=C:\Users\gabriel\Documents\purgatory-of-alighieri"
-SET "COMMIT_MESSAGE=New"
-SET "BRANCH_NAME=main"
-setlocal enabledelayedexpansion
+setlocal EnableDelayedExpansion
 
-:loop
-git fetch
+REM Caminho do arquivo XML do agendador (deve estar na mesma pasta)
+set XML=AutoSave.xml
 
-for /f "delims=" %%a in ('git status --porcelain') do (
-    git add .
-    git commit -m "Auto commit"
-    git push
+REM Nome da tarefa
+set TASKNAME=AutoSave
+
+REM Caminho do projeto (apenas para rodar o commit manual depois)
+set PROJECT_PATH=C:\Users\gabriel\Documents\purgatory-of-alighieri
+
+echo =============================================
+echo Instalador do AutoSave - Commit Automático
+echo =============================================
+
+REM Verifica se a tarefa já existe
+echo Verificando se a tarefa %TASKNAME% já está instalada...
+schtasks /query /tn "%TASKNAME%" >nul 2>&1
+
+IF %ERRORLEVEL%==0 (
+    echo A tarefa %TASKNAME% ja existe. Nao sera reinstalada.
+) ELSE (
+    echo Instalando tarefa %TASKNAME%...
+    schtasks /create /tn "%TASKNAME%" /xml "%XML%" /f
+    IF %ERRORLEVEL%==0 (
+        echo Tarefa instalada com sucesso!
+    ) ELSE (
+        echo ERRO ao instalar a tarefa.
+        pause
+        exit /b
+    )
 )
 
-timeout /t 2 >nul
-goto loop
+echo.
+echo Iniciando auto_commit.bat agora...
+echo.
 
-echo --- Iniciando Auto-Push ---
-echo Caminho: %REPO_PATH%
-echo Mensagem: %COMMIT_MESSAGE%
+REM Executa o auto_commit.bat normal
+start "" "%PROJECT_PATH%\auto_commit.bat"
 
-cd /d "%REPO_PATH%"
+echo Instalacao concluida.
+echo.
 
-:: 1. Verifica se há mudanças para adicionar (ignora arquivos não rastreados '??')
-git status --porcelain | findstr /v "^??"
-if errorlevel 1 (
-    echo [%time%] Sem mudanças rastreadas para commitar.
-    goto :eof
-)
-
-:: 2. Adiciona todos os arquivos modificados
-echo [%time%] Adicionando todas as mudanças...
-git add .
-
-:: 3. Faz o commit
-echo [%time%] Fazendo commit com a mensagem "%COMMIT_MESSAGE%"...
-git commit -m "%COMMIT_MESSAGE%"
-
-:: 4. Faz o push para o GitHub
-echo [%time%] Fazendo push para a branch %BRANCH_NAME%...
-git push origin %BRANCH_NAME%
-
-if errorlevel 1 (
-    echo ERRO: O push falhou! Verifique sua conexão ou se há conflitos.
-) else (
-    echo SUCESSO: Commit e Push automáticos concluídos.
-)
-
-echo -----------------------------
+pause
+exit
