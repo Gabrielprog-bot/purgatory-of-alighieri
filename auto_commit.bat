@@ -1,49 +1,32 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: Garantir que está na pasta correta
+:: Sempre começar na pasta onde o .BAT está
 cd /d "%~dp0"
 
-:: Pegar data e hora
-for /f "tokens=1-3 delims=/ " %%a in ("%date%") do (
-    set DIA=%%a
-    set MES=%%b
-    set ANO=%%c
-)
+echo ==============================================
+echo AUTO COMMIT AUTOMÁTICO INICIADO
+echo Verificando alterações a cada 60 segundos...
+echo ==============================================
+echo.
 
-set HORA=%time:~0,8%
-set MSG="Auto Commit - %DIA%/%MES%/%ANO% %HORA%"
+:LOOP
 
-echo ============================================
-echo Commit iniciado em: %DIA%/%MES%/%ANO% %HORA%
-echo ============================================
-
-:: Verificar alterações
-git status --porcelain
-if errorlevel 1 (
-    echo ERRO: Git não encontrado ou pasta errada.
-    pause
-    exit /b
-)
-
-:: Se não há mudanças, sair
+:: Verifica se existe alteração
 git status --porcelain | findstr . >nul
-if %errorlevel% neq 0 (
-    echo Nenhuma alteração encontrada.
-    exit /b
+if %errorlevel% equ 0 (
+    echo [%date% %time%] Alterações detectadas! Commitando...
+
+    git add .
+    git commit -m "Auto commit - %date% %time%"
+    git push
+
+    echo [%date% %time%] Commit e push concluídos.
+) else (
+    echo [%date% %time%] Nenhuma alteração...
 )
 
-echo Fazendo git add...
-git add .
+:: Espera 60 segundos
+timeout /t 60 >nul
 
-echo Criando commit...
-git commit -m %MSG%
-
-echo Enviando para o repositório (push)...
-git push
-
-echo ============================================
-echo Processo concluído.
-echo ============================================
-
-exit /b
+goto LOOP
