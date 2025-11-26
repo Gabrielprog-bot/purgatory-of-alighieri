@@ -41,3 +41,14 @@ To https://github.com/Gabrielprog-bot/purgatory-of-alighieri.git
 [ ] Commit e push concluídos. 
 [ ] Alterações detectadas. 
 Commitando... 
+warning: in the working copy of 'commit_log.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'run_hidden.vbs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'install.bat', CRLF will be replaced by LF the next time Git touches it
+[main dbc8ca0] Auto commit -
+ 3 files changed, 62 insertions(+), 2 deletions(-)
+ create mode 100644 install.bat
+To https://github.com/Gabrielprog-bot/purgatory-of-alighieri.git
+   4908ea8..dbc8ca0  main -> main
+[ ] Commit e push concluídos. 
+[ ] Alterações detectadas. 
+Commitando... 
