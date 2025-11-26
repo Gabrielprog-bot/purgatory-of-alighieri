@@ -2,75 +2,87 @@
 setlocal enableextensions enabledelayedexpansion
 
 echo ==========================================
-echo        INSTALADOR DO AUTOSAVE (corrigido)
+echo     INSTALADOR DO AUTOSAVE COMPLETO
 echo ==========================================
 echo.
 
-:: pasta do script (com barra no final)
+:: pasta do script (com barra final)
 set "PROJECT_PATH=%~dp0"
 
-echo Projeto: %PROJECT_PATH%
+echo Pasta do projeto: %PROJECT_PATH%
 echo.
 
-:: 1) criar run_hidden.vbs corretamente
+:: ============================================================
+:: 1) Criar VBS oculto
+:: ============================================================
+
 echo Criando run_hidden.vbs...
-(
-  echo Set sh = CreateObject("WScript.Shell")
-  echo sh.Run "%PROJECT_PATH%auto_commit.bat", 0
-) > "%PROJECT_PATH%run_hidden.vbs"
+
+echo Set sh = CreateObject("WScript.Shell") > "%PROJECT_PATH%run_hidden.vbs"
+echo sh.Run "%PROJECT_PATH%auto_commit.bat", 0 >> "%PROJECT_PATH%run_hidden.vbs"
 
 if exist "%PROJECT_PATH%run_hidden.vbs" (
-  echo ✓ run_hidden.vbs criado em %PROJECT_PATH%
+    echo ✓ run_hidden.vbs criado
 ) else (
-  echo ERRO: nao foi possivel criar run_hidden.vbs
-  pause
-  exit /b 1
+    echo ✗ ERRO criando run_hidden.vbs
+    pause
+    exit /b 1
 )
 
 echo.
 
-:: 2) criar a tarefa no Agendador de Tarefas
-echo Criando tarefa AutoSave no Agendador de Tarefas...
+:: ============================================================
+:: 2) Criar tarefa no Agendador
+:: ============================================================
 
-:: Monta o comando - sem "/RL" para evitar erro de parametro inválido
 set "TASKNAME=AutoSave"
-set "TASKRUN=wscript.exe \"%PROJECT_PATH%run_hidden.vbs\""
+set "TASKCMD=wscript.exe \"%PROJECT_PATH%run_hidden.vbs\""
+
+echo Criando tarefa AutoSave...
 
 schtasks /query /tn "%TASKNAME%" >nul 2>&1
 if %errorlevel% equ 0 (
-    echo A tarefa "%TASKNAME%" já existe. Pulando criacao.
+    echo A tarefa já existe. Pulando criação.
 ) else (
-    schtasks /create /tn "%TASKNAME%" /tr "%TASKRUN%" /sc onlogon /f >nul 2>&1
+    schtasks /create /tn "%TASKNAME%" /tr "%TASKCMD%" /sc onlogon /f >nul 2>&1
+
     if %errorlevel% neq 0 (
-        echo ERRO ao criar a tarefa. Tente executar este instalador como Administrador.
-        echo Saida do schtasks: %errorlevel%
+        echo ✗ ERRO criando a tarefa AutoSave
+        echo Execute este instalador como ADMINISTRADOR.
         pause
         exit /b 1
-    ) else (
-        echo ✓ Tarefa "%TASKNAME%" criada com sucesso.
     )
+    
+    echo ✓ Tarefa AutoSave instalada com sucesso!
 )
 
 echo.
 
-:: 3) iniciar a tarefa agora (executar a tarefa imediatamente)
+:: ============================================================
+:: 3) Iniciar AutoSave agora (invisível)
+:: ============================================================
+
 echo Iniciando AutoSave agora...
+
 schtasks /run /tn "%TASKNAME%" >nul 2>&1
 if %errorlevel% neq 0 (
-    :: se nao conseguiu iniciar via schtasks, tenta iniciar o VBS diretamente
+    echo Aviso: não foi possível iniciar via schtasks.
+    echo Iniciando manualmente...
     start "" wscript.exe "%PROJECT_PATH%run_hidden.vbs"
-) 
+)
 
 echo.
 echo ==========================================
-echo   Instalacao concluida. AutoSave instalado.
+echo   Instalacao concluída com sucesso!
 echo ==========================================
 echo.
-
-echo Para verificar:
-echo  - "schtasks /query /tn %TASKNAME%"  -> ver se existe a tarefa
-echo  - "schtasks /run /tn %TASKNAME%"    -> forcar execucao agora
-echo  - conferir commit_log.txt na pasta do projeto
+echo Agora o AutoSave:
+echo  ✔ Inicia junto com o Windows
+echo  ✔ Roda completamente invisível
+echo  ✔ Executa auto_commit.bat em loop
+echo  ✔ Faz commits automáticos a cada 1 minuto
+echo  ✔ Salva tudo no commit_log.txt
+echo ==========================================
 echo.
 
 pause
