@@ -1,51 +1,79 @@
 @echo off
+setlocal EnableDelayedExpansion
+
+:: ==========================================================
+::  1) Garantir que o script SEMPRE execute na pasta correta
+:: ==========================================================
 cd /d "%~dp0"
-SET "REPO_PATH=C:\Users\gabriel\Documents\purgatory-of-alighieri"
-SET "COMMIT_MESSAGE=New"
-SET "BRANCH_NAME=main"
-setlocal enabledelayedexpansion
 
-:loop
-git fetch
+:: ==========================================================
+::  2) Criar arquivo de log
+:: ==========================================================
+set LOGFILE=commit_log.txt
 
-for /f "delims=" %%a in ('git status --porcelain') do (
-    git add .
-    git commit -m "Auto commit"
-    git push
+:: Pega a data e hora atual
+for /f "tokens=1-4 delims=/ " %%a in ("%date%") do (
+    set DIA=%%a
+    set MES=%%b
+    set ANO=%%c
+)
+set HORA=%time:~0,8%
+set DATAHORA=%DIA%/%MES%/%ANO% %HORA%
+
+echo. >> "%LOGFILE%"
+echo ============================================== >> "%LOGFILE%"
+echo Commit iniciado em %DATAHORA% >> "%LOGFILE%"
+echo ============================================== >> "%LOGFILE%"
+
+:: ==========================================================
+::  3) Verificar se existe algo para commitar
+:: ==========================================================
+git status --porcelain > temp_status.txt
+
+if not exist temp_status.txt (
+    echo [ERRO] Git não respondeu. >> "%LOGFILE%"
+    exit /b
 )
 
-timeout /t 2 >nul
-goto loop
+for /f %%x in (temp_status.txt) do (
+    set EXISTE=1
+)
 
-echo --- Iniciando Auto-Push ---
-echo Caminho: %REPO_PATH%
-echo Mensagem: %COMMIT_MESSAGE%
+del temp_status.txt
 
-cd /d "%REPO_PATH%"
+if not defined EXISTE (
+    echo Nenhuma alteração encontrada. Nada a commitar. >> "%LOGFILE%"
+    exit /b
+)
 
-:: 1. Verifica se há mudanças para adicionar (ignora arquivos não rastreados '??')
-git status --porcelain | findstr /v "^??"
+echo Alterações detectadas. Preparando commit... >> "%LOGFILE%"
+
+:: ==========================================================
+::  4) Executar o commit
+:: ==========================================================
+git add . >> "%LOGFILE%" 2>&1
+
+git commit -m "Auto commit - %DATAHORA%" >> "%LOGFILE%" 2>&1
+
 if errorlevel 1 (
-    echo [%time%] Sem mudanças rastreadas para commitar.
-    goto :eof
+    echo ERRO ao fazer commit! >> "%LOGFILE%"
+    exit /b
 )
 
-:: 2. Adiciona todos os arquivos modificados
-echo [%time%] Adicionando todas as mudanças...
-git add .
+echo Commit realizado com sucesso. >> "%LOGFILE%"
 
-:: 3. Faz o commit
-echo [%time%] Fazendo commit com a mensagem "%COMMIT_MESSAGE%"...
-git commit -m "%COMMIT_MESSAGE%"
-
-:: 4. Faz o push para o GitHub
-echo [%time%] Fazendo push para a branch %BRANCH_NAME%...
-git push origin %BRANCH_NAME%
+:: ==========================================================
+::  5) Fazer o push
+:: ==========================================================
+git push >> "%LOGFILE%" 2>&1
 
 if errorlevel 1 (
-    echo ERRO: O push falhou! Verifique sua conexão ou se há conflitos.
-) else (
-    echo SUCESSO: Commit e Push automáticos concluídos.
+    echo ERRO ao enviar para o repositório! >> "%LOGFILE%"
+    echo Possível falta de internet ou conflito. >> "%LOGFILE%"
+    exit /b
 )
 
-echo -----------------------------
+echo Push enviado com sucesso para o repositório. >> "%LOGFILE%"
+
+echo Processo concluído. >> "%LOGFILE%"
+exit /b
