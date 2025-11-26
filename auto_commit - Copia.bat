@@ -1,50 +1,14 @@
 @echo off
-SET "REPO_PATH=C:\Users\gabriel\Documents\purgatory-of-alighieri"
-SET "COMMIT_MESSAGE=New"
-SET "BRANCH_NAME=main"
-setlocal enabledelayedexpansion
+set SCRIPT_NAME=auto_commit.bat
 
-:loop
-git fetch
+REM Caminho da pasta Startup do usuário
+set STARTUP_FOLDER=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup
 
-for /f "delims=" %%a in ('git status --porcelain') do (
-    git add .
-    git commit -m "Auto commit"
-    git push
-)
+REM Caminho da pasta onde o script está sendo executado
+set CURRENT_FOLDER=%~dp0
 
-timeout /t 2 >nul
-goto loop
+echo Copiando script de auto-commit para o Startup...
+copy "%CURRENT_FOLDER%%SCRIPT_NAME%" "%STARTUP_FOLDER%" /Y
 
-echo --- Iniciando Auto-Push ---
-echo Caminho: %REPO_PATH%
-echo Mensagem: %COMMIT_MESSAGE%
-
-cd /d "%REPO_PATH%"
-
-:: 1. Verifica se há mudanças para adicionar (ignora arquivos não rastreados '??')
-git status --porcelain | findstr /v "^??"
-if errorlevel 1 (
-    echo [%time%] Sem mudanças rastreadas para commitar.
-    goto :eof
-)
-
-:: 2. Adiciona todos os arquivos modificados
-echo [%time%] Adicionando todas as mudanças...
-git add .
-
-:: 3. Faz o commit
-echo [%time%] Fazendo commit com a mensagem "%COMMIT_MESSAGE%"...
-git commit -m "%COMMIT_MESSAGE%"
-
-:: 4. Faz o push para o GitHub
-echo [%time%] Fazendo push para a branch %BRANCH_NAME%...
-git push origin %BRANCH_NAME%
-
-if errorlevel 1 (
-    echo ERRO: O push falhou! Verifique sua conexão ou se há conflitos.
-) else (
-    echo SUCESSO: Commit e Push automáticos concluídos.
-)
-
-echo -----------------------------
+echo Instalado com sucesso. O Windows irá executar o script no próximo login.
+pause
