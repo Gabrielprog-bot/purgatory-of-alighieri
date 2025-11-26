@@ -1,5 +1,7 @@
 ::[Bat To Exe Converter]
 ::
+::fBE1pAF6MU+EWHreyHcjLQlHcAODPnmzA7kgzOf4+ueCrFkOaPIqaojazrucOa0c7AjleZ8q3nNfisIwDQ5McS2oYQI5oHoMtGWRVw==
+::fBE1pAF6MU+EWHreyHcjLQlHcAODPnmzA7kgzOf4+ueCrFkOaPIqaojazrucOa0c7AjleZ8q3nNfisIwHg5WQRqiagsxpyBUtHfl
 ::YAwzoRdxOk+EWAjk
 ::fBw5plQjdCyDJGyX8VAjFBxVThaLOWeGIroL5uT07u6UnkoUQOoqesLW26aFbukQ5SU=
 ::YAwzuBVtJxjWCl3EqQJgSA==
@@ -14,7 +16,7 @@
 ::dAsiuh18IRvcCxnZtBJQ
 ::cRYluBh/LU+EWAnk
 ::YxY4rhs+aU+JeA==
-::cxY6rQJ7JhzQF1fEqQJQ
+::cxY6rQJ7JhzQF1fEqQJhSA==
 ::ZQ05rAF9IBncCkqN+0xwdVs0
 ::ZQ05rAF9IAHYFVzEqQJQ
 ::eg0/rx1wNQPfEVWB+kM9LVsJDGQ=
@@ -26,7 +28,7 @@
 ::ZQ0/vhVqMQ3MEVWAtB9wSA==
 ::Zg8zqx1/OA3MEVWAtB9wSA==
 ::dhA7pRFwIByZRRnk
-::Zh4grVQjdCyDJGyX8VAjFBxVThaLOWeGIroL5uT07u6UnlkYR/Y6NorD39Q=
+::Zh4grVQjdCyDJGyX8VAjFBxVThaLOWeGIroL5uT07u6UnmwIQO0seZnelLGWJYA=
 ::YB416Ek+ZW8=
 ::
 ::
