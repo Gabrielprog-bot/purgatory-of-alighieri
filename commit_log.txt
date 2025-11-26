@@ -13,3 +13,14 @@ To https://github.com/Gabrielprog-bot/purgatory-of-alighieri.git
 [ ] Commit e push concluídos. 
 [26/11/2025 14:02:29] Alterações detectadas. 
 Commitando... 
+warning: in the working copy of 'commit_log.txt', CRLF will be replaced by LF the next time Git touches it
+[main 2ed5bb3] Auto commit - 26/11/2025 14:02:29
+ 4 files changed, 13 insertions(+), 93 deletions(-)
+ delete mode 100644 rig_medium_movement_basic - Copia - Copia - Copia.tscn
+ delete mode 100644 rig_medium_movement_basic - Copia - Copia.tscn
+ delete mode 100644 rig_medium_movement_basic - Copia.tscn
+To https://github.com/Gabrielprog-bot/purgatory-of-alighieri.git
+   881c4d6..2ed5bb3  main -> main
+[26/11/2025 14:02:29] Commit e push concluídos. 
+[ ] Alterações detectadas. 
+Commitando... 
