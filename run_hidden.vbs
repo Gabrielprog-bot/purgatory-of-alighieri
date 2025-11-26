@@ -1,2 +1,2 @@
-Set objShell = CreateObject("WScript.Shell")
-objShell.Run """auto_commit.bat""", 0
+Set sh = CreateObject("WScript.Shell") 
+sh.Run "C:\Users\gabriel\Documents\purgatory-of-alighieri\auto_commit.bat", 0 
