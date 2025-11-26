@@ -6,3 +6,4 @@
 [] Alteracoes detectadas. 
 [] Commit enviado. 
 ---------------------------------------- 
+[] Alteracoes detectadas. 

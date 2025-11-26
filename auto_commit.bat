@@ -10,6 +10,8 @@ if %errorlevel% equ 0 (
     git commit -m "Auto commit - !now!"
     git push
     echo [%now%] Commit enviado. >> commit_log.txt
+	git pull
+echo o seu repositorio esta sicronizado!
     echo ---------------------------------------- >> commit_log.txt
 )
 timeout /t 60 >nul
