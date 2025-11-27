@@ -1,26 +1,22 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: PASTA DO PROJETO
-set "PROJECT_FOLDER=%~dp0"
+:: FORÇA O SCRIPT A RODAR NA PASTA ONDE ELE ESTÁ
+cd /d "%~dp0..\.."
 
-:: CRIA A PASTA "LogsCommit" SE NÃO EXISTIR
-if not exist "%PROJECT_FOLDER%LogsCommit" (
-    mkdir "%PROJECT_FOLDER%LogsCommit"
-)
+:: GARANTE QUE A PASTA LogsCommit EXISTE
+if not exist "LogsCommit" mkdir "LogsCommit"
 
-:: ARQUIVO DE LOG COM NOME DO USUÁRIO
-set "LOGFILE=%PROJECT_FOLDER%LogsCommit\commit_log %USERNAME%.txt"
-
-cd /d "%PROJECT_FOLDER%"
+:: NOME DO LOG POR USUÁRIO
+set "LOGFILE=LogsCommit\commit_log %USERNAME%.txt"
 
 :LOOP
 
-:: ATUALIZA REPOSITÓRIO (PULL)
+:: ATUALIZA O REPOSITORIO
 git fetch
 git pull --rebase --autostash >nul 2>&1
 
-:: VERIFICA SE EXISTE ALGUMA ALTERAÇÃO
+:: VERIFICA ALTERAÇÕES
 git status --porcelain | findstr . >nul
 if %errorlevel% equ 0 (
     set "now=%date% %time%"
