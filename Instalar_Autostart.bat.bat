@@ -1,60 +1,104 @@
 @echo off
-title Instalador Premium - Purgatory
+title Instalador Blindado - Purgatory
 color 0F
 
 :: ==========================================================
-:: 1. AUTO-ELEVACAO (Pedir Admin sozinho)
+:: 1. AUTO-ELEVACAO (Metodo Mais Seguro)
 :: ==========================================================
-:: Verifica se tem permissao de admin
-fltmc >nul 2>&1
-if %errorlevel% NEQ 0 (
-    echo [INFO] Solicitando permissao de Administrador...
-    powershell -Command "Start-Process '%~dpnx0' -Verb RunAs"
+:: Verifica se ja e Admin
+net session >nul 2>&1
+if %errorLevel% == 0 (
+    goto :ADMIN_OK
+) else (
+    echo [INFO] Precisamos de permissao de Administrador...
+    echo [INFO] Uma janela vai pedir permissao. Clique em SIM.
+    powershell -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
     exit /b
 )
 
+:ADMIN_OK
 :: ==========================================================
-:: 2. INSTALACAO DA TAREFA
+:: 2. FORCAR A PASTA CORRETA (Correcao do Bug)
 :: ==========================================================
+:: Garante que estamos na pasta do arquivo, nao no System32
 cd /d "%~dp0"
-set "ARQUIVO_ALVO=%~dp0SyncJogo.bat"
+
+echo [DIAGNOSTICO] Estou rodando em:
+echo %cd%
+echo.
+
+set "ARQUIVO_BAT=SyncJogo.bat"
+set "ARQUIVO_VBS=Launcher_Invisivel.vbs"
 set "NOME_TAREFA=Purgatory_AutoSync"
 
-if not exist "%ARQUIVO_ALVO%" (
-    msg * "ERRO: O arquivo SyncJogo.bat nao foi encontrado nesta pasta!"
+:: Verifica se o SyncJogo existe
+if not exist "%ARQUIVO_BAT%" (
+    color 0C
+    echo [ERRO FATAL] Nao encontrei o SyncJogo.bat!
+    echo Ele precisa estar nesta pasta: %cd%
+    pause
     exit
 )
 
-:: Cria a tarefa no Windows
-schtasks /create /tn "%NOME_TAREFA%" /tr "\"%ARQUIVO_ALVO%\"" /sc onlogon /rl highest /f >nul 2>&1
+:: ==========================================================
+:: 3. CRIAR O LANÇADOR VBS (Sem parenteses para evitar erro)
+:: ==========================================================
+echo [PASSO 1] Criando o arquivo Launcher_Invisivel.vbs...
+
+echo Set WshShell = CreateObject("WScript.Shell") > "%ARQUIVO_VBS%"
+echo WshShell.CurrentDirectory = "%~dp0" >> "%ARQUIVO_VBS%"
+echo WshShell.Run chr(34) ^& "%~dp0%ARQUIVO_BAT%" ^& chr(34), 0 >> "%ARQUIVO_VBS%"
+echo Set WshShell = Nothing >> "%ARQUIVO_VBS%"
+
+:: Verificacao se criou
+if exist "%ARQUIVO_VBS%" (
+    echo [OK] Arquivo VBS criado com sucesso.
+    :: Removi o comando de esconder (attrib +h) para voce ver que funcionou
+) else (
+    color 0C
+    echo [ERRO] Falha ao criar o arquivo VBS. Verifique permissoes da pasta.
+    pause
+    exit
+)
 
 :: ==========================================================
-:: 3. JANELA DE CONFIRMACAO (VBScript)
+:: 4. CONFIGURAR O AGENDADOR
 :: ==========================================================
-:: Cria um pequeno script visual temporario
-set "VBS_SCRIPT=%temp%\msgbox_purgatory.vbs"
+echo [PASSO 2] Configurando Agendador de Tarefas...
 
-echo Set objShell = WScript.CreateObject("WScript.Shell") > "%VBS_SCRIPT%"
-echo Mensagem = "A instalacao foi concluida com sucesso!" ^& vbCrLf ^& vbCrLf ^& "Para que a sincronizacao automatica comece a funcionar, e recomendado reiniciar o computador." ^& vbCrLf ^& vbCrLf ^& "Deseja reiniciar o Windows agora?" >> "%VBS_SCRIPT%"
-echo Titulo = "Instalacao Concluida - Purgatory" >> "%VBS_SCRIPT%"
-echo ' 4 = Botoes Sim/Nao, 32 = Icone de Interrogacao >> "%VBS_SCRIPT%"
-echo Resultado = MsgBox(Mensagem, 4 + 32, Titulo) >> "%VBS_SCRIPT%"
-echo WScript.Quit Resultado >> "%VBS_SCRIPT%"
+schtasks /create /tn "%NOME_TAREFA%" /tr "\"%~dp0%ARQUIVO_VBS%\"" /sc onlogon /rl highest /f
 
-:: Executa a janela e pega a resposta (6 = Sim, 7 = Nao)
-cscript /nologo "%VBS_SCRIPT%"
+if %ERRORLEVEL% NEQ 0 (
+    color 0C
+    echo [ERRO] Falha no comando schtasks.
+    pause
+    exit
+)
+
+echo [OK] Tarefa agendada.
+
+:: ==========================================================
+:: 5. MENSAGEM FINAL (Visual)
+:: ==========================================================
+echo [PASSO 3] Abrindo janela de confirmacao...
+
+set "MSG_SCRIPT=%temp%\msgbox_fim.vbs"
+
+echo Set objShell = WScript.CreateObject("WScript.Shell") > "%MSG_SCRIPT%"
+echo Mensagem = "Instalacao Concluida!" ^& vbCrLf ^& vbCrLf ^& "O arquivo Launcher_Invisivel.vbs foi criado na pasta." ^& vbCrLf ^& "Nao apague ele." ^& vbCrLf ^& vbCrLf ^& "Deseja reiniciar agora?" >> "%MSG_SCRIPT%"
+echo Resultado = MsgBox(Mensagem, 4 + 64, "Purgatory Sync") >> "%MSG_SCRIPT%"
+echo WScript.Quit Resultado >> "%MSG_SCRIPT%"
+
+cscript /nologo "%MSG_SCRIPT%"
 set "RESPOSTA=%errorlevel%"
+del "%MSG_SCRIPT%"
 
-:: Apaga o script temporario
-del "%VBS_SCRIPT%"
-
-:: ==========================================================
-:: 4. REINICIAR OU SAIR
-:: ==========================================================
+:: Se clicou em SIM (6), reinicia
 if %RESPOSTA% EQU 6 (
-    :: O usuario clicou em SIM
     shutdown /r /t 0
 ) else (
-    :: O usuario clicou em NAO
-    exit
+    echo.
+    echo [FIM] Voce escolheu nao reiniciar agora.
+    echo Pode fechar esta janela.
+    pause
 )
