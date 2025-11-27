@@ -1,32 +1,73 @@
-:: --- INÍCIO: Confirmação de Reinício (Insira este bloco no final do seu instalar.bat) ---
+@echo off
+title Instalador Purgatory - Final (Aviso Simples)
+color 0F
 
-:: 1. Cria um arquivo VBScript temporário que exibe a caixa de diálogo "Sim/Não"
-echo Set WshShell = CreateObject("WScript.Shell") > "%temp%\confirm_restart.vbs"
-echo btn = WshShell.Popup("A instalação foi concluída. Deseja reiniciar o computador agora?", 0, "Confirmação de Reinício", 4 + 32) >> "%temp%\confirm_restart.vbs"
-echo WScript.Quit btn >> "%temp%\confirm_restart.vbs"
+:: ==========================================================
+:: 1. AUTO-ELEVACAO (GARANTIR ADMIN)
+:: ==========================================================
+net session >nul 2>&1
+if %errorLevel% == 0 (
+    goto :ADMIN_OK
+) else (
+    echo [INFO] Solicitando permissao de Administrador...
+    powershell -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
+    exit /b
+)
 
-:: 2. Executa o VBScript e armazena a resposta (código de saída)
-:: O código de saída (ERRORLEVEL) é 6 para "Sim" e 7 para "Não".
-cscript //nologo "%temp%\confirm_restart.vbs"
+:ADMIN_OK
+cd /d "%~dp0"
 
-:: 3. Verifica a resposta do usuário
-IF ERRORLEVEL 6 GOTO PerformRestart
+:: ==========================================================
+:: 2. VERIFICACOES E CRIACAO DO LAUNCHER
+:: ==========================================================
+set "ARQUIVO_BAT=SyncJogo.bat"
+set "ARQUIVO_VBS=Launcher_Invisivel.vbs"
+set "NOME_TAREFA=Purgatory_AutoSync"
 
-:: Se o usuário clicar em "Não" (código de saída 7), o código continua abaixo
-ECHO O reinício foi cancelado pelo usuário.
+if not exist "%ARQUIVO_BAT%" (
+    color 0C
+    echo [ERRO] O arquivo SyncJogo.bat nao esta nesta pasta!
+    pause
+    exit
+)
 
-:: 4. Limpa o script VBScript temporário
-del "%temp%\confirm_restart.vbs"
+echo [PASSO 1] Criando o lancador invisivel...
+(
+echo Set WshShell = CreateObject("WScript.Shell")
+echo WshShell.CurrentDirectory = "%~dp0"
+echo WshShell.Run chr(34) ^& "%~dp0%ARQUIVO_BAT%" ^& chr(34), 0
+echo Set WshShell = Nothing
+) > "%ARQUIVO_VBS%"
 
-GOTO EndInstallation
+:: Esconde o arquivo VBS
+attrib +h "%ARQUIVO_VBS%"
 
-:PerformRestart
-    ECHO Usuário escolheu Sim. Reiniciando o sistema em 5 segundos...
-    :: Mude o "/t 5" para "/t 0" se quiser que seja instantâneo
-    shutdown /r /t 5
-    
-:EndInstallation
-    :: Limpa o script VBScript temporário (se não foi limpo antes)
-    del "%temp%\confirm_restart.vbs" 2>nul
-    
-:: --- FIM: Confirmação de Reinício ---
+:: ==========================================================
+:: 3. AGENDADOR DE TAREFAS
+:: ==========================================================
+echo [PASSO 2] Configurando inicializacao automatica...
+
+schtasks /create /tn "%NOME_TAREFA%" /tr "\"%~dp0%ARQUIVO_VBS%\"" /sc onlogon /rl highest /f >nul 2>&1
+
+:: ==========================================================
+:: 4. JANELA DE AVISO (APENAS INFORMA)
+:: ==========================================================
+echo [PASSO 3] Concluido.
+
+timeout /t 1 >nul
+
+set "MSG_SCRIPT=Aviso_Final.vbs"
+
+(
+echo Set objShell = WScript.CreateObject("WScript.Shell")
+echo Mensagem = "Instalacao Concluida com Sucesso!" ^& vbCrLf ^& vbCrLf ^& "O Purgatory Sync ja esta configurado." ^& vbCrLf ^& "Ele comecara a trabalhar automaticamente na proxima vez que voce ligar o computador." ^& vbCrLf ^& vbCrLf ^& "Reinicie a maquina quando puder."
+echo ' 0=Botao OK, 64=Icone Informacao, 4096=Fica no Topo
+echo MsgBox Mensagem, 0 + 64 + 4096, "Instalacao Finalizada"
+) > "%MSG_SCRIPT%"
+
+:: Mostra a mensagem na tela
+cscript //nologo "%MSG_SCRIPT%"
+
+:: Limpa o lixo e sai
+del "%MSG_SCRIPT%" >nul 2>&1
+exit
