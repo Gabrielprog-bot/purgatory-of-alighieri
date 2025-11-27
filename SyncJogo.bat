@@ -1,63 +1,86 @@
 @echo off
-title AutoSync Git - V4 (Inteligente)
+title AutoSync Purgatory - Automacao
 color 0F
 
-:: --- CONFIGURAÇÃO ---
-cd /d "C:\Users\SeuUsuario\Documents\MeuJogo"
+:: --- PARTE 1: DETECÇÃO AUTOMÁTICA DE LOCAL ---
+:: O comando abaixo pega o caminho de ONDE este arquivo está.
+:: Não importa se está no C:, no D:, no Desktop ou em Documents.
+:: Funciona para o Gabriel, Guilherme, etc.
+cd /d "%~dp0"
 
 :INICIO
 cls
 echo ==========================================
-echo    DIAGNOSTICO E SINCRONIZACAO
+echo    PROJETO: PURGATORY OF ALIGHIERI
+echo    MODO: AUTOMATICO
 echo ==========================================
 echo.
 
-:: 1. DETECTAR BRANCH (Main ou Master?)
-for /f "tokens=*" %%a in ('git branch --show-current') do set MINHA_BRANCH=%%a
-echo [INFO] Trabalhando na branch: %MINHA_BRANCH%
+:: --- PARTE 2: DETECÇÃO DO NOME ---
+:: A variavel %USERNAME% pega o nome do computador (Ex: Gabriel)
+:: Voce nao precisa escrever nada.
+set NOME_ATUAL=%USERNAME%
 
-:: 2. PULL (Baixar)
-echo.
-echo [1/4] Baixando (Pull) da branch %MINHA_BRANCH%...
-git pull origin %MINHA_BRANCH%
+echo [INFO] Caminho detectado: %cd%
+echo [INFO] Usuario detectado: %NOME_ATUAL%
 
-:: 3. ADD (Adicionar)
+:: Tenta pegar a branch automaticamente
+for /f "tokens=*" %%a in ('git branch --show-current') do set BRANCH_ATUAL=%%a
+echo [INFO] Branch: %BRANCH_ATUAL%
 echo.
-echo [2/4] Adicionando arquivos...
+
+:: 1. PULL
+echo [1/4] Baixando alteracoes...
+git pull origin %BRANCH_ATUAL%
+timeout /t 5 >nul
+
+:: --- LOG INTELIGENTE ---
+:: Cria a pasta com o nome detectado (Ex: _Logs_Equipe\Gabriel)
+if not exist "_Logs_Equipe\%NOME_ATUAL%" mkdir "_Logs_Equipe\%NOME_ATUAL%"
+
+set ARQUIVO_LOG="_Logs_Equipe\%NOME_ATUAL%\Log_Atividades.txt"
+set HORA=%DATE% as %TIME%
+
+echo [LOG] Salvando log para %NOME_ATUAL%...
+echo %HORA% - Sync na branch %BRANCH_ATUAL% >> %ARQUIVO_LOG%
+
+:: 2. ADD
+echo.
+echo [2/4] Preparando arquivos...
 git add .
+timeout /t 2 >nul
 
-:: 4. COMMIT
+:: 3. COMMIT
 echo.
 echo [3/4] Commitando...
-set timestamp=%DATE:/=-%_%TIME::=-%
-set timestamp=%timestamp: =%
-git commit -m "Auto: %timestamp%"
+:: Cria um ID unico para o commit
+set ID=%DATE:/=-%-%TIME::=-%
+set ID=%ID: =%
 
-:: 5. PUSH (O Momento da Verdade)
+git commit -m "AutoSync: %ID% por %NOME_ATUAL%"
+
+IF %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo [INFO] Nada novo para enviar.
+    goto TIMER
+)
+
+:: 4. PUSH
 echo.
-echo [4/4] Enviando (Push) para %MINHA_BRANCH%...
-git push origin %MINHA_BRANCH%
+echo [4/4] Enviando para GitHub...
+git push origin %BRANCH_ATUAL%
 
-:: --- VERIFICACAO DE ERRO ---
 IF %ERRORLEVEL% NEQ 0 (
     color 0C
     echo.
-    echo ======================================================
-    echo [ERRO FATAL] O PUSH FALHOU!
-    echo ======================================================
-    echo LEIA A MENSAGEM DE ERRO ACIMA (em texto branco/cinza).
-    echo.
-    echo CAUSAS COMUNS:
-    echo 1. "rejected - non-fast-forward": Alguem enviou algo antes de voce. (Rode o script de novo)
-    echo 2. "File too large": Voce tem um arquivo maior que 100MB. (Delete ele ou use LFS)
-    echo 3. "Access denied": Voce nao esta logado ou nao tem permissao.
-    echo.
-    echo O script parou para voce ler o erro.
+    echo [ERRO] Falha no envio! Verifique a internet.
     pause
-    exit
+    goto INICIO
 )
 
+:TIMER
 echo.
-echo [SUCESSO] Tudo enviado corretamente!
-timeout /t 60
+echo [SUCESSO] Tudo limpo.
+echo Proxima checagem em 60 segundos...
+timeout /t 60 >nul
 goto INICIO
