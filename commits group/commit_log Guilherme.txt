@@ -707,3 +707,7 @@
 [26/11/2025 22:56:32,81] Commit enviado. 
 ---------------------------------------- 
 [26/11/2025 22:57:35,76] Alteracoes detectadas. 
+[26/11/2025 22:57:35,76] Commit enviado. 
+---------------------------------------- 
+Rebase falhou, tentando novamente... 
+[26/11/2025 22:58:38,83] Alteracoes detectadas. 
