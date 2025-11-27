@@ -1,38 +1,39 @@
 @echo off
 :: Arquivo: instalar_autostart.bat
-:: Cria um diretório de aplicacao local e instala o Launcher para o usuario.
+:: Instala o Launcher no diretorio do usuario e cria a tarefa agendada.
 
 SET "PROJECT_NAME=purgatory-of-alighieri"
 SET "APP_DIR=%USERPROFILE%\AutoSave\%PROJECT_NAME%"
-SET "STARTUP_FOLDER=%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"
 SET "PROJECT_PATH=%CD%"
+SET "LAUNCHER_NAME=SyncLauncher.vbs"
+SET "TASK_NAME=Git Sync - %PROJECT_NAME%"
 
 ECHO --- Instalacao do Auto Save ---
 
 :: 1. Cria a pasta de aplicacao local do usuario e o diretorio de Inicializacao
 MKDIR "%APP_DIR%" 2>nul
+ECHO Pasta de aplicacao criada em: %APP_DIR%
 
 :: 2. Cria o Launcher VBScript DENTRO da pasta de aplicacao do USUARIO
-:: ATENCAO: A variavel %PROJECT_PATH% contem o caminho absoluto onde o BAT foi executado
+:: O '0' no final da linha 'WshShell.Run' e o 'Run Rider' que voce pediu (oculta a janela).
 (
     ECHO Set WshShell = CreateObject("WScript.Shell")
     ECHO caminhoDoProjeto = "%PROJECT_PATH%\"
     ECHO WshShell.CurrentDirectory = caminhoDoProjeto
     ECHO WshShell.Run chr(34) & caminhoDoProjeto & "SyncJogo.bat" & chr(34), 0
     ECHO Set WshShell = Nothing
-) > "%APP_DIR%\SyncLauncher.vbs"
-ECHO Launcher criado em: "%APP_DIR%\SyncLauncher.vbs"
+) > "%APP_DIR%\%LAUNCHER_NAME%"
+ECHO Launcher invisivel criado e configurado.
 
-:: 3. Cria um Atalho para o Launcher na pasta Inicializar (Startup)
-ECHO Set oShell = CreateObject("WScript.Shell") > "%TEMP%\shortcut.vbs"
-ECHO Set oShortcut = oShell.CreateShortcut("%STARTUP_FOLDER%\%PROJECT_NAME% Sync.lnk") >> "%TEMP%\shortcut.vbs"
-ECHO oShortcut.TargetPath = "%APP_DIR%\SyncLauncher.vbs" >> "%TEMP%\shortcut.vbs"
-ECHO oShortcut.WorkingDirectory = "%APP_DIR%" >> "%TEMP%\shortcut.vbs"
-ECHO oShortcut.Save >> "%TEMP%\shortcut.vbs"
+:: 3. CRIA A TAREFA AGENDADA (Task Scheduler)
+:: Task agendada para rodar a cada 30 minutos, iniciando o Launcher VBScript.
+SCHTASKS /Create /TN "%TASK_NAME%" /TR "wscript.exe \"%APP_DIR%\%LAUNCHER_NAME%\"" /SC MINUTE /MO 30 /F
 
-cscript //nologo "%TEMP%\shortcut.vbs"
-del "%TEMP%\shortcut.vbs"
-ECHO Atalho criado para Inicializacao.
+IF ERRORLEVEL 0 (
+    ECHO Tarefa Agendada "%TASK_NAME%" criada com sucesso!
+) ELSE (
+    ECHO ERRO: Falha ao criar a Tarefa Agendada. Execute como Administrador.
+)
 
 :: --- Bloco de Confirmação de Reinício ---
 ECHO Set WshShell = CreateObject("WScript.Shell") > "%TEMP%\confirm_restart.vbs"
