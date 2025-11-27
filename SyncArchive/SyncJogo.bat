@@ -1,48 +1,63 @@
 @echo off
-title AutoSync Git - V3 (Universal)
-color 0A
+title AutoSync Git - V4 (Inteligente)
+color 0F
 
 :: --- CONFIGURAÇÃO ---
-:: Mude para a pasta do seu projeto
 cd /d "C:\Users\SeuUsuario\Documents\MeuJogo"
 
 :INICIO
 cls
 echo ==========================================
-echo    SISTEMA DE SINCRONIZACAO ATIVO
-echo    Equipe: Voce + 5 Devs
+echo    DIAGNOSTICO E SINCRONIZACAO
 echo ==========================================
 echo.
 
-:: 1. PULL (Baixar novidades)
-echo [1/4] Buscando alteracoes da equipe...
-git pull origin main
+:: 1. DETECTAR BRANCH (Main ou Master?)
+for /f "tokens=*" %%a in ('git branch --show-current') do set MINHA_BRANCH=%%a
+echo [INFO] Trabalhando na branch: %MINHA_BRANCH%
 
-:: Verifica conflito
+:: 2. PULL (Baixar)
+echo.
+echo [1/4] Baixando (Pull) da branch %MINHA_BRANCH%...
+git pull origin %MINHA_BRANCH%
+
+:: 3. ADD (Adicionar)
+echo.
+echo [2/4] Adicionando arquivos...
+git add .
+
+:: 4. COMMIT
+echo.
+echo [3/4] Commitando...
+set timestamp=%DATE:/=-%_%TIME::=-%
+set timestamp=%timestamp: =%
+git commit -m "Auto: %timestamp%"
+
+:: 5. PUSH (O Momento da Verdade)
+echo.
+echo [4/4] Enviando (Push) para %MINHA_BRANCH%...
+git push origin %MINHA_BRANCH%
+
+:: --- VERIFICACAO DE ERRO ---
 IF %ERRORLEVEL% NEQ 0 (
     color 0C
     echo.
-    echo [ERRO] Conflito detectado no Pull!
-    echo O script parou para voce resolver manualmente.
+    echo ======================================================
+    echo [ERRO FATAL] O PUSH FALHOU!
+    echo ======================================================
+    echo LEIA A MENSAGEM DE ERRO ACIMA (em texto branco/cinza).
+    echo.
+    echo CAUSAS COMUNS:
+    echo 1. "rejected - non-fast-forward": Alguem enviou algo antes de voce. (Rode o script de novo)
+    echo 2. "File too large": Voce tem um arquivo maior que 100MB. (Delete ele ou use LFS)
+    echo 3. "Access denied": Voce nao esta logado ou nao tem permissao.
+    echo.
+    echo O script parou para voce ler o erro.
     pause
     exit
 )
 
-:: 2. ADD (Adicionar arquivos)
 echo.
-echo [2/4] Verificando seus arquivos...
-git add .
-
-:: 3. COMMIT (Tenta salvar. Se estiver vazio, o Git avisa e seguimos)
-echo.
-echo [3/4] Tentando criar Commit...
-set timestamp=%DATE:/=-%_%TIME::=-%
-set timestamp=%timestamp: =%
-
-:: O comando abaixo tenta commitar. 
-:: Se nao tiver nada novo, ele vai dar "erro" (exit code 1) e pulamos pro timer.
-git commit -m "Auto-Save: %timestamp% por %USERNAME%"
-
-IF %ERRORLEVEL% NEQ 0 (
-    echo.
-    echo [INFO] Nada de novo para enviar agora
+echo [SUCESSO] Tudo enviado corretamente!
+timeout /t 60
+goto INICIO
