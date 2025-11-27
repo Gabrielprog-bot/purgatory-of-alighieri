@@ -1,5 +1,5 @@
 @echo off
-title Instalador Purgatory (PowerShell Edition)
+title Instalador Purgatory (Clean Mode)
 color 0F
 
 :: ==========================================================
@@ -32,9 +32,9 @@ if not exist "%ARQUIVO_BAT%" (
 )
 
 :: ==========================================================
-:: 3. CRIAR O LANÇADOR (Arquivo necessario para esconder a janela preta)
+:: 3. CRIAR O LANÇADOR E ESCONDER TUDO
 :: ==========================================================
-echo [PASSO 1] Criando lancador invisivel...
+echo [PASSO 1] Criando arquivos invisiveis...
 
 (
 echo Set WshShell = CreateObject("WScript.Shell")
@@ -43,8 +43,11 @@ echo WshShell.Run chr(34) ^& "%~dp0%ARQUIVO_BAT%" ^& chr(34), 0
 echo Set WshShell = Nothing
 ) > "%ARQUIVO_VBS%"
 
-:: Esconde o arquivo
+:: --- AQUI ESTA A MAGICA ---
+:: Oculta o Launcher VBS
 attrib +h "%ARQUIVO_VBS%"
+:: Oculta o SyncJogo.bat (ele some da vista)
+attrib +h "%ARQUIVO_BAT%"
 
 :: ==========================================================
 :: 4. AGENDADOR DE TAREFAS
@@ -54,11 +57,10 @@ echo [PASSO 2] Configurando inicializacao automatica...
 schtasks /create /tn "%NOME_TAREFA%" /tr "\"%~dp0%ARQUIVO_VBS%\"" /sc onlogon /rl highest /f >nul 2>&1
 
 :: ==========================================================
-:: 5. JANELA DE AVISO (VIA POWERSHELL - INFALIVEL)
+:: 5. JANELA DE AVISO (POWER SHELL)
 :: ==========================================================
 echo [PASSO 3] Concluido.
 
-:: O comando abaixo cria a janela direto na memoria, sem criar arquivos.
-powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('Instalacao Concluida com Sucesso! ' + [Environment]::NewLine + [Environment]::NewLine + 'O Purgatory Sync ja esta configurado para rodar em segredo.' + [Environment]::NewLine + 'Ele comecara na proxima vez que ligar o PC.' + [Environment]::NewLine + [Environment]::NewLine + 'Voce pode reiniciar a maquina quando quiser.', 'Sucesso', 'OK', 'Information')}"
+powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('Instalacao Concluida!' + [Environment]::NewLine + [Environment]::NewLine + 'Os arquivos de sistema foram ocultados para limpar a pasta.' + [Environment]::NewLine + 'O SyncJogo rodara automaticamente ao reiniciar.', 'Sucesso', 'OK', 'Information')}"
 
 exit
