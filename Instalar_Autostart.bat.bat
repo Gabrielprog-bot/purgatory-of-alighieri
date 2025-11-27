@@ -1,5 +1,5 @@
 @echo off
-title Instalador Purgatory - Final (Aviso Simples)
+title Instalador Purgatory (PowerShell Edition)
 color 0F
 
 :: ==========================================================
@@ -18,7 +18,7 @@ if %errorLevel% == 0 (
 cd /d "%~dp0"
 
 :: ==========================================================
-:: 2. VERIFICACOES E CRIACAO DO LAUNCHER
+:: 2. VERIFICACOES
 :: ==========================================================
 set "ARQUIVO_BAT=SyncJogo.bat"
 set "ARQUIVO_VBS=Launcher_Invisivel.vbs"
@@ -31,7 +31,11 @@ if not exist "%ARQUIVO_BAT%" (
     exit
 )
 
-echo [PASSO 1] Criando o lancador invisivel...
+:: ==========================================================
+:: 3. CRIAR O LANÇADOR (Arquivo necessario para esconder a janela preta)
+:: ==========================================================
+echo [PASSO 1] Criando lancador invisivel...
+
 (
 echo Set WshShell = CreateObject("WScript.Shell")
 echo WshShell.CurrentDirectory = "%~dp0"
@@ -39,35 +43,22 @@ echo WshShell.Run chr(34) ^& "%~dp0%ARQUIVO_BAT%" ^& chr(34), 0
 echo Set WshShell = Nothing
 ) > "%ARQUIVO_VBS%"
 
-:: Esconde o arquivo VBS
+:: Esconde o arquivo
 attrib +h "%ARQUIVO_VBS%"
 
 :: ==========================================================
-:: 3. AGENDADOR DE TAREFAS
+:: 4. AGENDADOR DE TAREFAS
 :: ==========================================================
 echo [PASSO 2] Configurando inicializacao automatica...
 
 schtasks /create /tn "%NOME_TAREFA%" /tr "\"%~dp0%ARQUIVO_VBS%\"" /sc onlogon /rl highest /f >nul 2>&1
 
 :: ==========================================================
-:: 4. JANELA DE AVISO (APENAS INFORMA)
+:: 5. JANELA DE AVISO (VIA POWERSHELL - INFALIVEL)
 :: ==========================================================
 echo [PASSO 3] Concluido.
 
-timeout /t 1 >nul
+:: O comando abaixo cria a janela direto na memoria, sem criar arquivos.
+powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('Instalacao Concluida com Sucesso! ' + [Environment]::NewLine + [Environment]::NewLine + 'O Purgatory Sync ja esta configurado para rodar em segredo.' + [Environment]::NewLine + 'Ele comecara na proxima vez que ligar o PC.' + [Environment]::NewLine + [Environment]::NewLine + 'Voce pode reiniciar a maquina quando quiser.', 'Sucesso', 'OK', 'Information')}"
 
-set "MSG_SCRIPT=Aviso_Final.vbs"
-
-(
-echo Set objShell = WScript.CreateObject("WScript.Shell")
-echo Mensagem = "Instalacao Concluida com Sucesso!" ^& vbCrLf ^& vbCrLf ^& "O Purgatory Sync ja esta configurado." ^& vbCrLf ^& "Ele comecara a trabalhar automaticamente na proxima vez que voce ligar o computador." ^& vbCrLf ^& vbCrLf ^& "Reinicie a maquina quando puder."
-echo ' 0=Botao OK, 64=Icone Informacao, 4096=Fica no Topo
-echo MsgBox Mensagem, 0 + 64 + 4096, "Instalacao Finalizada"
-) > "%MSG_SCRIPT%"
-
-:: Mostra a mensagem na tela
-cscript //nologo "%MSG_SCRIPT%"
-
-:: Limpa o lixo e sai
-del "%MSG_SCRIPT%" >nul 2>&1
 exit
