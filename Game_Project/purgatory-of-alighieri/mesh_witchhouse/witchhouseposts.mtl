@@ -1,0 +1,17 @@
+# Wavefront MTL file
+# Creator: Ultimate Unwrap3D Pro v3.40
+# URL: http://www.unwrap3d.com
+# Time: Sat Dec 01 19:23:59 2012
+# num_materials: 1
+
+newmtl witchhousepostmat
+Ka 0.000000 0.000000 0.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.100000 0.100000 0.100000
+d 1.000000
+illum 2
+Ns 0.000000
+map_Kd witchhousepost_tex.png
+map_Bump witchhousepost_NM.png
+
+# num_materials: 1
